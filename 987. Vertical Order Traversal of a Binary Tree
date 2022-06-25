@@ -1,0 +1,94 @@
+#include <iostream>
+#include <utility>
+#include <vector>
+#include <queue>
+
+using namespace std;
+ struct TreeNode {
+      int val;
+      TreeNode *left;
+      TreeNode *right;
+      TreeNode() : val(0), left(nullptr), right(nullptr) {}
+      TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+      TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+  };
+
+struct QNODE {
+    TreeNode * tNode;
+    int level;
+    int dist;
+    QNODE() : tNode(nullptr),level(0), dist(0) {}
+    QNODE(TreeNode * tt,int ll ,int dd ): tNode(tt),level(ll),dist(dd){}
+};
+class Solution {
+public:
+    vector<vector<int>> verticalTraversal(TreeNode* root) {
+         vector<vector<int>> presult;
+         vector<vector<int>> nresult;
+        if(root == NULL)
+            return presult;
+        QNODE qnode;
+        qnode.tNode = root;
+        qnode.level = 0;
+        qnode.dist = 0 ;
+        queue<QNODE> qq;
+        qq.push(qnode);
+        while(!qq.empty())
+        {
+            QNODE qqqq = qq.front();qq.pop();
+            int poppedVal = qqqq.tNode->val;
+            int poppedlevel = qqqq.level;
+            int poppeddist = qqqq.dist;
+            if(qqqq.tNode->left)
+               qq.push(QNODE(qqqq.tNode->left,poppedlevel+1 , poppeddist -1));
+             if(qqqq.tNode->right)
+               qq.push(QNODE(qqqq.tNode->right,poppedlevel+1 ,poppeddist+1));
+            if(poppeddist<0)
+            {
+                poppeddist = poppeddist *-1;
+                nresult.resize(poppeddist+1);
+                nresult[poppeddist].push_back(poppedVal);
+            }
+            else
+            {
+                presult.resize(poppeddist+1);
+                presult[poppeddist].push_back(poppedVal);
+            }                        
+        }//while
+        
+        vector<vector<int>> finalresult;
+        for(int i=nresult.size();i>0;i--)
+        {
+            finalresult.push_back(nresult[i]);
+        }
+         for(int jj=0;jj<=presult.size();jj++)
+        {
+            finalresult.push_back(presult[jj]);
+        }
+     return   finalresult; 
+    }//func
+};
+
+int main()
+{
+    cout<<"Hello World";
+    TreeNode* node = nullptr;
+    node = new TreeNode(3) ;
+    node->left = new TreeNode(9);
+    node->right = new TreeNode(20);
+    node->right->left = new TreeNode(15);
+    node->right->right = new TreeNode(7);
+    Solution solve;
+    vector<vector<int>> result=solve.verticalTraversal(node);
+    for(int ii=0;ii<result.size();ii++)
+    {
+        cout<<"row : "<<ii<<endl;
+        vector<int> rr = result[ii];
+        for (int jj=0;jj<rr.size();jj++)
+        {
+            cout<<rr[jj]<<",";
+        }
+        cout<<endl;
+    }
+    return 0;
+}
