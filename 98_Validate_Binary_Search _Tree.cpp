@@ -9,6 +9,30 @@
  *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
  * };
  */
+#if 1 
+// third solution  .. best solution...
+bool isBST(TreeNode * curr , TreeNode * minRange ,  TreeNode * maxRange)
+{
+    if (curr == NULL)
+        return true;
+    if(minRange && minRange->val >= curr->val)
+       return false;
+    if(maxRange && maxRange->val <= curr->val)
+         return false;
+    bool left = isBST(curr->left , minRange ,  curr);
+    bool right = isBST(curr->right , curr ,  maxRange);
+    return left && right;
+}
+class Solution {
+public:
+    bool isValidBST(TreeNode* root) {
+         TreeNode * minRange = NULL;
+          TreeNode * maxRange = NULL;
+        return  isBST(root, minRange ,  maxRange);
+    }
+};
+#endif
+#if 0
 // my initial code has INT_MAX and INT_MIN but since data range is also -231 <= Node.val <= 231 - 1
 // there are cases where INT_MAX and INT_MIN are given as node value for Root node and also for leaf nodes...
 // that was creating problem as in our code we are matching with < INT_MAX  and > INT_MIN which fails 
@@ -34,6 +58,7 @@ public:
         return checkBST(root , LLONG_MIN , LLONG_MAX);        
     }
 };
+#endif
 #if 0
 //solution 2 
  //after writing complete code i was not able to set prev pointer forget & in pointer to reflect it across stack frames
@@ -58,3 +83,5 @@ public:
     }
 };
 #endif
+
+
