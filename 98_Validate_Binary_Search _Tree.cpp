@@ -34,3 +34,27 @@ public:
         return checkBST(root , LLONG_MIN , LLONG_MAX);        
     }
 };
+#if 0
+//solution 2 
+ //after writing complete code i was not able to set prev pointer forget & in pointer to reflect it across stack frames
+bool inOrder(TreeNode * curr , TreeNode * &prev)
+{
+    if(curr == NULL)
+        return true;
+ 
+    bool left = inOrder(curr->left , prev);
+    if (prev && curr->val <= prev->val)
+         return false; 
+    prev = curr;
+    bool right = inOrder(curr->right, prev);
+    return left && right;
+    
+}
+class Solution {
+public:
+    bool isValidBST(TreeNode* root) {
+         TreeNode* prev = NULL;
+        return inOrder(root , prev);        
+    }
+};
+#endif
