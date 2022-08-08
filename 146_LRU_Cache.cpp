@@ -22,42 +22,12 @@ struct dllnode{
 };
 struct dllnode * leftptr = NULL;
 struct dllnode * rightptr = NULL;
-void movetoFront( struct dllnode * node)
-{
-    if(leftptr==node)
-    {
-       //already front 
-       return;
-    }
-    else if(rightptr == node)
-    {   //its last node and atleast two node are there in DLL 
-        //cut 
-        node->prev->next = NULL;
-        rightptr = node->prev;
-        //prepare
-        node->prev = NULL;
-        node->next = leftptr;
-        node->next->prev= node;
-        //paste
-        leftptr = node;
-        
-        return;
-    }
-    else
-    {   // middle node;
-        node->prev->next = node->next;
-        node->next->prev = node->prev;
-        node->next = leftptr;
-        node->prev = NULL;
-        leftptr = node;
-        return;
-    }
-}
+
 struct dllnode * insertInFront( int key , int data)
 {
     // create new  node and insert in front  left 
     struct dllnode * newNode =  new  dllnode(key, data);
-    if(leftptr == NULL) // first node  DLL
+    if(leftptr == NULL) // entering first node in DLL
     {
        leftptr = rightptr = newNode;
     } 
@@ -69,23 +39,39 @@ struct dllnode * insertInFront( int key , int data)
     }
     return newNode;
 }
-int removefromBack(void)
-{
-  // delete last node , node from back / right
-  struct dllnode * lastNode = rightptr;
-  if(rightptr != leftptr) // there are atleast two node 
-  {
-     rightptr = lastNode->prev; // if size is 1 this can be null
+int removeLRU(void)
+{ 
+    int rkey =rightptr->key;
+    // delete last node in DLL
+   if(leftptr == rightptr) // single node in DLL
+   {
+     delete rightptr;
+     leftptr = rightptr= NULL;
+   }
+   else
+   {
+     struct dllnode *todelete = rightptr;
+     rightptr = rightptr->prev;
      rightptr->next = NULL;
-  }
-  else
+     delete todelete;
+   }
+  return rkey;
+}
+void remove(struct dllnode * nNode)
+{
+  if(nNode->prev)
   {
-      leftptr = rightptr = NULL;
+        nNode->prev->next = nNode->next;
   }
-  
-  int val = lastNode->value;
-  delete lastNode;
-  return val;
+  if(nNode->next)
+  {
+    nNode->next->prev = nNode->prev;
+  }
+  if(nNode==leftptr)
+    leftptr = leftptr->next;
+  if(nNode==rightptr)
+    rightptr = rightptr->prev;
+    return;
 }
 int g_capacity;
 unordered_map <int, struct dllnode * > hashMap; 
@@ -98,10 +84,16 @@ public:
     int get(int key) {
         std::unordered_map<int,struct dllnode *>::const_iterator found = hashMap.find (key);
         if ( found == hashMap.end() )
-            return -1;
+            return -1; // not found
         else
         {
-            movetoFront(found->second); // update the node to bring it to front;
+            // element is in cache 
+            // delete that found node in DLL 
+            int value = found->second->value;
+            remove(found->second);
+            //insert similar node in DLL and update pointer enty in Hash
+            struct dllnode * nNode = insertInFront(key,value);
+            hashMap[key] = nNode;
             return found->second->value;
         }   
     }
@@ -112,14 +104,17 @@ public:
         std::unordered_map<int,struct dllnode *>::const_iterator found = hashMap.find (key);
         if(found != hashMap.end() )
         {  // element is in cache 
-            found->second->value = value;
-            movetoFront(found->second); // update the node to bring it to front;
+            // delete that found node in DLL 
+            remove(found->second);
+            //insert similar node in DLL and update pointer enty in Hash
+            struct dllnode * nNode = insertInFront(key,value);
+            hashMap[key] = nNode;
         }
         else 
         { // insert new  entry in LL and hashmap
             if(hashMap.size()==g_capacity)
-            { // its full 
-                int rkey = removefromBack();
+            { // Hash is  full , remove LRU node and remove its entry from Hash
+                int rkey = removeLRU();
                 hashMap.erase(rkey);            
             }
             struct dllnode * nNode = insertInFront(key,value);
@@ -128,19 +123,42 @@ public:
         
      }
 };
+void printDLL(void)
+{
+    struct dllnode * st = leftptr;
+    while(st)
+    {
+        cout<<"("<<st->key<<","<< st->value<<")";
+        if(st->next)
+            cout<<" --> ";
+     st = st->next;
+    }
+    cout<<endl;
+}
 int main()
 {
-    int capacity = 3;
+    int capacity = 2;
     LRUCache* cache = new LRUCache(capacity);
     cache->put(1, 0);
+    printDLL();
     cache->put(2, 2); // cache is {1=1, 2=2}
+    printDLL();
     int value = cache->get(1);    // return 1
+    cout<<"Get of 1 returned : "<<value<<endl;
     cache->put(3, 3); // LRU key was 2, evicts key 2, cache is v{1=1, 3=3}
+    printDLL();
     value =cache->get(2);    // returns -1 (not found)
+    printDLL();
     cache->put(4, 4); // LRU key was 1, evicts key 1, cache is {4=4, 3=3}
+    printDLL();
     value =cache->get(1);    // return -1 (not found)
+    cout<<"Get of 1 returned : "<<value<<endl;
     value =cache->get(3);    // return 3
+    cout<<"Get of 3 returned : "<<value<<endl;
+    printDLL();
     value =cache->get(4);    // return 4
+    cout<<"Get of 4 returned : "<<value<<endl;
+    printDLL();
 
     return 0;
 }
