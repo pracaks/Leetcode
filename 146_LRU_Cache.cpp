@@ -80,6 +80,7 @@ public:
     LRUCache(int capacity) {
         g_capacity = capacity;
         hashMap.clear();
+        leftptr = rightptr= NULL; //  this was not added and even though logic was right it was faiilng
     }    
     int get(int key) {
         std::unordered_map<int,struct dllnode *>::const_iterator found = hashMap.find (key);
@@ -143,16 +144,19 @@ int main()
     printDLL();
     cache->put(2, 2); // cache is {1=1, 2=2}
     printDLL();
-    int value = cache->get(1);    // return 1
+    int value = cache->get(1);    // 
     cout<<"Get of 1 returned : "<<value<<endl;
+    printDLL();
     cache->put(3, 3); // LRU key was 2, evicts key 2, cache is v{1=1, 3=3}
     printDLL();
     value =cache->get(2);    // returns -1 (not found)
+    cout<<"Get of 2 returned : "<<value<<endl;
     printDLL();
     cache->put(4, 4); // LRU key was 1, evicts key 1, cache is {4=4, 3=3}
     printDLL();
     value =cache->get(1);    // return -1 (not found)
     cout<<"Get of 1 returned : "<<value<<endl;
+    printDLL();
     value =cache->get(3);    // return 3
     cout<<"Get of 3 returned : "<<value<<endl;
     printDLL();
